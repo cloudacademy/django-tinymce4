@@ -101,8 +101,11 @@ class TinyMCE(forms.Textarea):
 
 
 class AdminTinyMCE(admin_widgets.AdminTextareaWidget, TinyMCE):
-    pass
-
+    def __init__(self, *args, **kwargs):
+        tinymce_profile = kwargs.pop('profile', None)
+        super(AdminTinyMCE,self).__init__(*args, **kwargs)
+        if tinymce_profile:
+            self.profile = tinymce_profile
 
 def get_language_config(content_language=None):
     language = get_language()[:2]

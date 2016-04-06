@@ -85,7 +85,23 @@ class TinyMCE(forms.Textarea):
             html = [u'<div%s>%s</div>' % (flatatt(final_attrs), escape(value))]
         else:
             html = [u'<textarea%s>%s</textarea>' % (flatatt(final_attrs), escape(value))]
-        html.append(u'<script type="text/javascript">tinyMCE.init(%s)</script>' % mce_json)
+        html.append(u"""
+            <script type="text/javascript">
+                var data = %s; 
+                var $ = django.jQuery;
+                data['file_browser_callback']=cloudAcademyCallback; 
+                tinyMCE.init(data)
+                function cloudAcademyCallback(){
+                    
+                    $('#my_form input').click().on('change',function(){
+                        $(this).parent().submit();
+                    });       
+                }
+                $("body").append('<iframe id="form_target" name="form_target" style="display:none"></iframe><form id="my_form" action="/upload/" target="form_target" method="post" enctype="multipart/form-data" style="width:0px;height:0;overflow:hidden"><input name="image" type="file"></form>');
+            </script>
+        """ % mce_json)
+        
+        
 
         return mark_safe(u'\n'.join(html))
 

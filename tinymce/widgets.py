@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.admin import widgets as admin_widgets
 from django.core.urlresolvers import reverse
 from django.forms.widgets import flatatt
+from django.template.loader import render_to_string
 try:
     from django.utils.encoding import smart_text as smart_unicode
 except ImportError:
@@ -77,17 +78,15 @@ class TinyMCE(forms.Textarea):
                #del mce_config[k]
         mce_json = json.dumps(mce_config)
 
-        #for k in js_functions:
-            #index = mce_json.rfind('}')
-            #mce_json = mce_json[:index]+', '+k+':'+js_functions[k].strip()+mce_json[index:]
-
-        if mce_config.get('inline', False):
-            html = [u'<div%s>%s</div>' % (flatatt(final_attrs), escape(value))]
-        else:
-            html = [u'<textarea%s>%s</textarea>' % (flatatt(final_attrs), escape(value))]
-        html.append(u'<script type="text/javascript">tinyMCE.init(%s)</script>' % mce_json)
-
-        return mark_safe(u'\n'.join(html))
+        html = render_to_string('tinymce/widget.html', {
+            'mce_config': mce_config,
+            'mce_json': mce_json,
+            'attrs': flatatt(final_attrs),
+            'value': escape(value),
+            'id': final_attrs.get('id'),
+        })
+        
+        return mark_safe(html)
 
     def _media(self):
         if tinymce.settings.USE_COMPRESSOR:

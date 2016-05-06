@@ -5,26 +5,25 @@
 
     <input id="django-upload-input-{{ id }}" name="image" type="file" style="width:0; height:0; overflow:hidden;" />
     <script type="text/javascript">
-        (function(){
+        (function() {
             // fetch input from DOM 
-            var $ = django.jQuery;
-            var $input = $('#django-upload-input-{{ id }}');
+            var $ = django.jQuery,
+                $input = $("#django-upload-input-{{ id }}"),
+                $form = $input.closest("form"),
+                $buttons = $form.find("input[type='submit']");
 
-            $input.on('change',function(e){
+            $input.on('change',function(e) {
                 var file = e.target.files[0];
                 if(-1 === file.type.indexOf('image')){
                     return alert("Invalid image");
                 }
                 var reader = new FileReader();
-                reader.onload = function(e){
+                reader.onload = function(e) {
                     var html = '<img src="'+ e.target.result +'" />';
                     tinymce.activeEditor.insertContent(html);
                     $('.mce-window').find('.mce-primary').click(); // close popup
 
-                    // TODO disable form submit
-                    tinymce.activeEditor.uploadImages(function(success) {
-                        // TODO re-enable form submit
-                    });
+                    asyncUpload(); // start uploading
 
                 };
                 reader.readAsDataURL(file);
@@ -32,29 +31,50 @@
             });    
             
             // augment tinymce configuration
-            var data = {{ mce_json | safe }}; 
-            data['file_browser_callback'] = fileBrowserCallback; 
+            var data = {{ mce_json | safe }};
+            data['file_browser_callback'] = fileBrowserCallback;
             data['paste_postprocess'] = onPasteCallback;
             tinyMCE.init(data);
             
             // client-side callback
-            function fileBrowserCallback(){
-                // open native file picker
-                $input.trigger('click');       
+            function fileBrowserCallback() {
+                $input.trigger('click'); // open native file picker
             }
 
             // paste callback
-            function onPasteCallback(){
-                setTimeout(function(){
-                    // TODO disable form submit
-                    tinymce.activeEditor.uploadImages(function(success) {
-                        // TODO re-enable form submit
+            var _onPasteTimer = null;
+            function onPasteCallback(plugin, args) {
+                console.log(args.node);
+                if (_onPasteTimer) {
+                    clearTimeout(_onPasteTimer);
+                }
+                _onPasteTimer = setTimeout(asyncUpload, 500); // wait a bit, then upload
+            }
+
+            function asyncUpload() {
+                disableButtons();
+                tinymce.activeEditor.uploadImages().then(function(results) {
+                    enableButtons();
+                    if (!results) {
+                        return alert("Upload failed (the image will be inlined!)");
+                    }
+                    $.each(results, function() {
+                        if (!this.status) { 
+                            alert("Upload failed (the image will be inlined!)");
+                        } 
                     });
-                }, 500);
+                });
+            }
+
+            function disableButtons() {
+                $form.find("input[type='submit']").prop('disabled', true);
+            }
+
+            function enableButtons() {
+                $form.find("input[type='submit']").prop('disabled', false);
             }
 
         })();
     </script>
 
 {% endif %}
-

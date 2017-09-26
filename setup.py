@@ -10,8 +10,8 @@ def read(filename):
 long_description = read('README.md')
 
 setup(
-    name = "django-%s" % app_name,
-    version = version,
+    name = "ca.django-%s" % app_name,
+    version = '',
     packages = find_packages(),
     include_package_data = True,
     author = "Daniele Bernardini",

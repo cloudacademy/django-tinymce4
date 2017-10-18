@@ -10,7 +10,7 @@ long_description = read('README.md')
 
 setup(
     name="django-tinymce4",
-    version='v4.0',
+    version='v4.1',
     packages=find_packages(),
     include_package_data=True,
     author="Daniele Bernardini",

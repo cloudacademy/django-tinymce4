@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import metadata
 
 app_name = metadata.name
-version = metadata.version
+version='v3.2',
 
 
 def read(filename):
@@ -13,7 +13,7 @@ long_description = read('README.md')
 
 setup(
     name="django-%s" % app_name,
-    version=version,
+    version='v3.2',
     packages=find_packages(),
     include_package_data=True,
     author="Daniele Bernardini",
